@@ -15,9 +15,9 @@
 -- This table contains basic information about departments, including a unique department ID
 
 CREATE TABLE departments (
-    -- Unique ID for the department (AUTO_INCREMENT makes it automatic):
+    -- Unique ID for the department (AUTO_INCREMENT makes it automatically increment starting from 1):
     department_id INT PRIMARY KEY AUTO_INCREMENT,   
-    -- Name of the department (required field):
+    -- Name of the department (NOT NULL => required field):
     department_name VARCHAR(100) NOT NULL           
 );
 
@@ -25,12 +25,14 @@ CREATE TABLE departments (
 -- Step 2: Create the 'employees' table
 -- This table contains employees details, with several constraints applied.
 
+-- EXAMPLE#1: employees table (simplified version):
+-- ************************************************
 CREATE TABLE employees (
     -- emp_id as Primary Key with Auto Increment (unique identifier for each employee):
     emp_id INT AUTO_INCREMENT PRIMARY KEY,
      -- First name is required (NOT NULL constraint):          
     first_name VARCHAR(50) NOT NULL,  
-    -- Middle name is optional (can be NULL):              
+    -- Middle name is optional (Optional => can be NULL):              
     middle_name VARCHAR(50), 
     -- Last name is required (NOT NULL constraint)                        
     last_name VARCHAR(50) NOT NULL,  
@@ -43,14 +45,37 @@ CREATE TABLE employees (
     department_id INT,                               
     -- Notice that "department_id" is a "Foreign Key" referencing the 'departments' table
     
+    -- The Foreign Key constraint:
+    -- Links the 'employees' table to the 'departments' table    
+    FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+
+-- EXAMPLE#2: employees table (advanced version):
+-- **********************************************
+-- using CHECK constraints and the UNIQUE constraint:
+CREATE TABLE employees (
+    emp_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,  
+    middle_name VARCHAR(50), 
+    last_name VARCHAR(50) NOT NULL,  
+    job_title VARCHAR(50) NOT NULL,                  
+    hire_date DATE DEFAULT CURRENT_DATE, 
+    is_active TINYINT(1) DEFAULT 1, 
+    department_id INT,                               
+    
     -- Creating The Foreign Key constraint:
     -- Links the 'employees' table to the 'departments' table    
-    CONSTRAINT fk_department  -- Giving the foreign key a name                        
+    -- Giving the foreign key a constraint name "k_department"
+    CONSTRAINT fk_department                         
         FOREIGN KEY (department_id) REFERENCES departments(department_id)
         -- If a department is deleted, set the department_id to NULL for employees:
-        ON DELETE SET NULL,                          
+        ON DELETE SET NULL, 
+
+    -- Giving the CHECK() function a constraint name "chk_job_title"                                  
     CONSTRAINT chk_job_title CHECK (job_title <> ''),  
     -- CHECK (job_title <> '') => Ensures that job title is not empty
+
+    -- Giving the UNIQUE() function a constraint name "unique_employee" 
     CONSTRAINT unique_employee UNIQUE (first_name, last_name)  
     -- UNIQUE (first_name, last_name) => Ensures unique combinations of first and last name
 );
@@ -188,15 +213,30 @@ with each department having a unique identifier => a primary key "department_id"
 
 -- Insert a new employee into the 'employees' table
 INSERT INTO employees (first_name, middle_name, last_name, job_title, department_id)
-VALUES ('John', 'A.', 'Doe', 'Software Developer', 1);
+VALUES ('Alex', 'Chow', 'Software Developer', 1);
 
 -- Insert a new employee with a custom hire date and status
 INSERT INTO employees (first_name, middle_name, last_name, job_title, hire_date, is_active, department_id)
-VALUES ('Jane', 'B.', 'Smith', 'Project Manager', '2025-01-01', 0, 2);
+VALUES ('Kate', 'Bean', 'Wilson', 'Project Manager', '2025-01-01', 0, 2);
 
 -- Insert a new employee with only required fields (defaults will be applied)
 INSERT INTO employees (first_name, last_name, job_title, department_id)
-VALUES ('Alice', 'Johnson', 'HR Manager', 3);
+VALUES ('James', 'Dean', 'HR Manager', 3);
+
+/* 
+We can insert multiple rows in one insert statement:
+*/
+INSERT INTO employees (first_name, middle_name, last_name, job_title, hire_date, is_active, department_id)
+VALUES 
+    ('Steve', 'Almond.', 'Warner', 'Software Developer', NULL, 1, 1),
+    ('Martin', 'Bolder', 'Smith', 'Project Manager', '2024-08-22', 0, 2),
+    ('Alice', NULL, 'Johnson', 'HR Manager', NULL, 1, 3);
+
+/* 
+ If we want to use the default value (like hire_date or is_active) or for optional fields:
+ > we can use "NULL" or omit the column 
+ But notice that in the example above, we kept all the column names to show what values we are inserting.
+*/
 
 
 /* 
@@ -207,15 +247,41 @@ Modifying Table Structure:
 -- Adding new fields (columns) and constraints to an existing table:
 
 -- Add an 'email' column to the 'employees' table
+-- First Approach: Adding the email Column with "NOT NULL" and "UNIQUE"
+-----------------------------------------------------------------------
 ALTER TABLE employees
 ADD COLUMN email VARCHAR(100) NOT NULL UNIQUE;  
 -- Enforce uniqueness and NOT NULL constraint for email
+
+/* 
+IMPORTANT NOTE TO CONSIDER:
+- Adding a "NOT NULL" constraint to the email column will fail if the table already contains data.
+- This is because MySQL will try to insert a "NULL" value into the new email field for the existing rows, 
+  violating the NOT NULL constraint.
+- To avoid this error, we need to handle the existing rows before enforcing the "NOT NULL" constraint.
+*/
+
+-- Second Approach: Safer and Step-by-Step handling Existing Rows with "NULL"
+-----------------------------------------------------------------------------
+-- Step 1: Add the email column with NULL allowed:
+ALTER TABLE employees
+-- This allows existing rows to have "NULL" values in the email column:
+ADD COLUMN email VARCHAR(100) NULL;
+
+-- Step 2 (optional for later): After populating the email column, you can enforce the "NOT NULL" and "UNIQUE" constraints
+-- Now you can safely enforce the "NOT NULL" constraint (after populating the email field):
+ALTER TABLE employees
+MODIFY COLUMN email VARCHAR(100) NOT NULL;
+
+-- Step 3: Add the UNIQUE constraint (if needed) to ensure no duplicate email addresses:
+ALTER TABLE employees
+ADD CONSTRAINT unique_email UNIQUE (email);
 
 -- Add a CHECK constraint to ensure the email is in a valid format (simple example)
 ALTER TABLE employees
 ADD CONSTRAINT chk_email CHECK (email LIKE '%@%.%'); 
 /* 
- CHECK: Enforces conditions: => :
+ CHECK: Enforces conditions:
     > "email" cannot be empty
     > "email" must follow a basic pattern
     > "email" must contain contains '@' and '.'
@@ -248,7 +314,17 @@ Removing a Table:
 -- Deleting table(s) from the database:
 
 -- Drop the 'employees' table (removes both the data and the structure)
-DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS employees;  
+--NOTE: If the table exists, it will be dropped; if not, no error is thrown because of "IF EXISTS"
 
--- Drop the 'departments' table
+/* 
+Notice the phrase "IF EXISTS" to avoid errors if the table does not exist.
+This is a safety measure to ensure no error is thrown when attempting to drop a non-existent table.
+*/
+
+-- Drop the 'departments' table (removes both the data and the structure)
 DROP TABLE IF EXISTS departments;
+
+-- IMPORTANT NOTE:
+-- Once a table is dropped, it is permanently removed from the database, including its data and structure.
+-- Be sure to have a backup if you want to recover the table later.

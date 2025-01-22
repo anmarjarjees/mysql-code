@@ -50,7 +50,13 @@ Link: https://www.w3schools.com/sql/sql_constraints.asp
 Link: https://www.w3schools.com/sql/sql_primarykey.asp
 */
 
-
+/* 
+Data Types of this Code Example:
+********************************
+- INT: Used for storing whole numbers (integers). In your case, student_id will automatically generate a unique number for each student.
+- VARCHAR(50): Stands for "variable character" and is used to store text (strings). The number in parentheses, like 50, specifies the maximum number of characters that can be stored.
+- DATE: Stores date values in the format YYYY-MM-DD. It’s used for birthdates and enrollment dates.
+*/
 -- Step 1: Create the 'students' table (using plural name by convention)
 -- This table contains student information with basic constraints
 
