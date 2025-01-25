@@ -6,7 +6,7 @@ NOTE:
 Before start running and statement against any database,
 we have to active it first (select it and put it in use).
 Using the command:
-USE database_name
+> USE database_name
 */
 
 -- Select/Use/Activate the wanted database:
@@ -53,9 +53,16 @@ Link: https://www.w3schools.com/sql/sql_primarykey.asp
 /* 
 Data Types of this Code Example:
 ********************************
-- INT: Used for storing whole numbers (integers). In your case, student_id will automatically generate a unique number for each student.
-- VARCHAR(50): Stands for "variable character" and is used to store text (strings). The number in parentheses, like 50, specifies the maximum number of characters that can be stored.
-- DATE: Stores date values in the format YYYY-MM-DD. It’s used for birthdates and enrollment dates.
+** BASIC DATA TYPES: **
+- INT: Used for storing whole numbers (integers) like 5090 
+In your case, student_id will automatically generate a unique number for each student
+- TEXT => List of Words (article)
+- CHAR(5) => exactly 5 letters!!!!
+- VARCHAR(50): Stands for "variable character" and is used to store text (strings). 
+The number in parentheses, like 50, specifies the maximum number of characters that can be stored.
+   > VARCHAR(50) => 1 to 50 maximum OK
+- DATE: Stores date values in the format YYYY-MM-DD. 
+It's used for birthdates and enrollment dates.
 */
 -- Step 1: Create the 'students' table (using plural name by convention)
 -- This table contains student information with basic constraints
