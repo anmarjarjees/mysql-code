@@ -72,6 +72,7 @@ It's used for birthdates and enrollment dates.
 -- NOT NULL => Required field
 CREATE TABLE students (
     -- student_id: Primary Key with Auto Increment (unique identifier for each student):
+    -- AUTO_INCREMENT => automatically gets a new, unique value
     student_id INT AUTO_INCREMENT PRIMARY KEY,         
     -- first_name is required (NOT NULL constraint):
     first_name VARCHAR(50) NOT NULL,                    

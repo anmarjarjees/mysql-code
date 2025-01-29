@@ -15,8 +15,9 @@
 USE comp2003;
 
 -- Or creating a new database "week03"
+-- Remember: "IF NOT EXISTS" ensures we don't get an error if the database is already created
 CREATE DATABASE IF NOT EXISTS week03;
--- Optioanl => IF NOT EXISTS
+-- Optional => IF NOT EXISTS
 -- Primary Key => id 
 -- field (columns) => data type 
 
@@ -37,10 +38,6 @@ CREATE TABLE IF NOT EXISTS departments (
 To review:
 - Datatype => are required (cannot be ignored)
 - constraints  => are extra rules that we should add
-*/
-
-/*
-- PK <==> FK 
 */
 
 -- Step 2: Create the 'employees' table
@@ -72,12 +69,38 @@ CREATE TABLE IF NOT EXISTS employees (
     FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
 
+/* 
+- PK <==> FK
+> The 'departments' table is the "parent" because it holds unique department IDs (department_id)
+> The 'employees' table is the "child" because each employee can belong to one department,
+and we use a foreign key (department_id) in 'employees' to link to the 'departments' table.
+*/
+
+/* 
+Removing a Table:
+*****************
+*/
+-- Drop the 'employees' and 'departments' tables
+-- Deleting table(s) from the database:
+
+-- Drop the 'employees' table (removes both the data and the structure)
+DROP TABLE IF EXISTS employees;  
+/* 
+NOTE: If the table exists, it will be dropped; if not, no error is thrown because of "IF EXISTS"
+
+The phrase "IF EXISTS" is used to avoid errors if the table does not exist.
+This is a safety measure to ensure no error is thrown when attempting to drop a non-existent table.
+
+IMPORTANT NOTE:
+> Once a table is dropped, it is permanently removed from the database, including its data and structure.
+> Be sure to have a backup if you want to recover the table later.
+*/
+
 -- Dropping the table "employees" to create it again with more advanced statement
-DROP TABLE IF EXISTS employees;
 
 -- EXAMPLE#2: employees table (advanced version):
 -- **********************************************
--- using CHECK constraints and the UNIQUE constraint:
+-- using "CONSTRAINT" for naming the FOREIGN KEY:
 CREATE TABLE employees (
     emp_id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,  
@@ -140,22 +163,33 @@ Giving meaningful names to constraints makes our schema more readable and easier
 If we need to modify or drop a constraint later, will be much easier to refer to the constraint by its meaningful name that we created rather than relying on the automatically generated name (could be a long random string!)
 */
 
+
+
 /* 
 Explanation of "ON DELETE":
 ***************************
 When you define a "Foreign Key" constraint between two tables, 
 we have the options for how to handle the deletion of a record in the parent table
 (in our case, the "departments" table) that is being referenced by records 
-in the child table (the "employees" table):
+in the child table (the "employees" table)
+
+To summarize:
+*************
+When a parent record (in the 'departments' table) is deleted, 
+we can choose how to handle the related child records (in the 'employees' table):
 
 - ON DELETE CASCADE:
-CASCADE: Delete or update the row from the parent table and automatically delete or update the matching rows in the child table. all related records in the child table will be deleted when the referenced record in the parent table is deleted
+CASCADE: Automatically deletes all related records in the child table 
+when a record in the parent table is deleted
 
 - ON DELETE RESTRICT => "default if not specified":
-RESTRICT: Rejects the delete or update operation for the parent table. Specifying RESTRICT (or NO ACTION) is the same as omitting the ON DELETE or ON UPDATE clause. It will restrict the deletion of a parent record if it is still referenced by any child records
+RESTRICT: Prevents deletion of the parent record if there are still related records in the child table
+This is the default action if no "ON DELETE" option is specified
 
 - ON DELETE NO ACTION
-NO ACTION: A keyword from standard SQL. For InnoDB, this is equivalent to RESTRICT; the delete or update operation for the parent table is immediately rejected if there is a related foreign key value in the referenced table. It means no action will be taken, and if there are dependent child records, the delete operation will be blocked
+NO ACTION: Similar to RESTRICT; prevents deletion of the parent record 
+if there are related records in the child table.
+NO ACTION is more of a standard SQL term but behaves the same as RESTRICT in MySQL
 
 MySQL Docs "Referential Actions":
 Link: https://dev.mysql.com/doc/refman/8.4/en/create-table-foreign-keys.html#foreign-key-referential-actions
@@ -166,24 +200,24 @@ Link: https://dev.mysql.com/doc/refman/8.4/en/create-table-foreign-keys.html#for
 
 -- inserting/adding two departments
 INSERT INTO departments (department_name)
-VALUES ('IT'); -- with id 1 (auto-increment)
+VALUES ('IT'); -- department_id will auto-increment to 1
 INSERT INTO departments (department_name)
-VALUES ('HR'); -- with id 2 (auto-increment)
+VALUES ('HR'); -- department_id will auto-increment to 2
 
--- Insert a new employee into the 'employees' table
--- inserting/adding 1 employee:
+-- Inserting employees with different levels of detail
+-- Employee 1: All details specified
 INSERT INTO employees (first_name, last_name, job_title, department_id)
 VALUES ('Alex', 'Chow', 'Software Developer', 1);
 
--- Insert a new employee with a custom hire date and status
+-- Employee 2: Custom hire date and active status
 INSERT INTO employees (first_name, middle_name, last_name, job_title, hire_date, is_active, department_id)
 VALUES ('Kate', 'Bean', 'Wilson', 'Project Manager', '2025-01-01', 0, 1);
 
--- Insert a new employee with only required fields (defaults will be applied)
+-- Employee 3: Only required fields, others will use default values (hire_date, is_active)
 INSERT INTO employees (first_name, last_name, job_title, department_id)
 VALUES ('James', 'Dean', 'HR Manager', 2);
 
--- inserting/adding multiple employees (records/rows):
+-- inserting/adding multiple employees (records/rows) at once:
 INSERT INTO employees (first_name, middle_name, last_name, job_title, department_id)
 VALUES 
 ('Alba', NULL, 'Chows', 'Software Developer', 1),
@@ -198,10 +232,12 @@ VALUES
 /* 
 Database Table Relationship:
 ****************************
-In this example of Employees and departments, we have "one-to-many relationship":
-- The parent table "departments" contains the main data (departments), 
-with each department having a unique identifier => a primary key "department_id"
-- The child table "employees" contains records that reference the parent table’s primary key. Each employee has a department_id that associates them with a department
+In this example, the relationship between "departments" and "employees" is "one-to-many":
+- One department can have many employees, but each employee can only belong to one department.
+- The "departments" table is the "parent" table, and the "employees" table is the "child" table.
+- The "department_id" in the "employees" table is the foreign key that links to the primary key in the "departments" table.
 */
-SELECT * FROM departments;
-SELECT * FROM employees;
+
+-- Displaying all records from both tables to confirm the data
+SELECT * FROM departments;  -- Shows all department records
+SELECT * FROM employees;    -- Shows all employee records, including department associations
