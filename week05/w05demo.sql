@@ -1,3 +1,41 @@
+CREATE DATABASE IF NOT EXISTS week05;
+
+-- Copy the code of last week(s):
+-- Department Table
+-- Employees Table
+
+-- Activate the week05 database:
+USE week05;
+
+-- Parent table:
+CREATE TABLE IF NOT EXISTS departments (
+    -- Unique ID for the department (AUTO_INCREMENT makes it automatically increment starting from 1):
+    department_id INT PRIMARY KEY AUTO_INCREMENT,   
+    -- Name of the department (NOT NULL => required field):
+    department_name VARCHAR(100) NOT NULL           
+);
+
+-- Child table:
+CREATE TABLE employees (
+    emp_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,  
+    middle_name VARCHAR(50), 
+    last_name VARCHAR(50) NOT NULL,  
+    job_title VARCHAR(50) NOT NULL,                  
+    hire_date DATE DEFAULT CURRENT_TIMESTAMP, 
+    is_active TINYINT(1) DEFAULT 1, 
+    department_id INT,                               
+    
+    -- Creating The Foreign Key constraint:
+    -- Links the 'employees' table to the 'departments' table    
+    -- Giving the foreign key a constraint name "k_department"
+	CONSTRAINT fk_department
+        FOREIGN KEY (department_id) REFERENCES departments(department_id)
+        -- If a department is deleted, set the department_id to NULL for employees:
+	ON DELETE SET NULL
+);
+
+
 /* 
 1. INSERT Statement – Adding Data to Tables
 The INSERT statement is used to add new records (rows) into a table
@@ -6,7 +44,6 @@ The INSERT statement is used to add new records (rows) into a table
 INSERT INTO departments (department_name)
 VALUES ('Human Resources');
 -- Remember that We only need to provide the 'department_name' since 'department_id' auto-increment
-
 
 -- Insert a new employee into the 'employees' table
 INSERT INTO employees (first_name, middle_name, last_name, job_title, department_id)
