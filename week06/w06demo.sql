@@ -42,8 +42,18 @@ The INSERT statement is used to add new records (rows) into a table
 */
 -- Insert a new department into the "departments" table:
 INSERT INTO departments (department_name)
-VALUES ('Human Resources');
+VALUES 
+('Human Resources'),
+('IT'),
+('Sale');
 -- Remember that We only need to provide the "department_name" since "department_id" auto-increment
+/*
+INSERT INTO departments (department_name)
+VALUES 
+('Human Resources'), => 1
+('IT'), => 2
+('Sale') => 3
+*/
 
 -- Insert a new employee into the "employees" table
 INSERT INTO employees (first_name, middle_name, last_name, job_title, department_id)
@@ -77,7 +87,7 @@ WHERE department_id = 1;
 -- The "%" symbol is a wildcard that represents any sequence of characters.
 SELECT first_name, last_name, job_title 
 FROM employees
-WHERE last_name LIKE 'S%';
+WHERE last_name LIKE 'S%'; -- Wild Card => % => any characters 
 
 -- Using Logical Operators (AND, OR)
 -- This query retrieves employees who either work in "Human Resources" (department_id = 1)
@@ -86,15 +96,26 @@ SELECT first_name, last_name, job_title
 FROM employees
 WHERE department_id = 1 OR job_title = 'Manager';
 
+/*
+Logical Operators
+AND 
+OR 
+*/
+
+-- This query retrieves employees who either work in "Human Resources"  
+-- And have the job title "Manager"
+SELECT * FROM employees 
+WHERE department_id = 1 AND job_title = 'manager';
+
 -- Combining AND with OR
--- This query retrieves employees who either work in "Human Resources" and are active 
--- (is_active = 1), or have the job title "Manager" and are active.
+-- This query retrieves employees who either work in "Human Resources" 
+-- and are active (is_active = 1), or have the job title "Manager"
 SELECT first_name, last_name, job_title
 FROM employees
 WHERE (department_id = 1 AND is_active = 1)
 OR (job_title = 'Manager' AND is_active = 1);
 
--- Using NOT with WHERE Clause – Negation
+-- Using "NOT" with WHERE Clause – Negation => !=
 -- This query retrieves employees who are NOT in "Human Resources" (department_id != 1).
 SELECT first_name, last_name, job_title
 FROM employees
@@ -111,15 +132,18 @@ WHERE hire_date BETWEEN '2020-01-01' AND '2021-12-31';
 
 -- Using "IN" to Filter Multiple Values
 -- This query retrieves employees whose department_id is either 1 or 2 (can be modified for other departments).
-SELECT first_name, last_name, department_id 
-FROM employees
-WHERE department_id IN (1, 2);
+-- solution1 => Using "OR"
+SELECT * from employees 
+WHERE department_id = 1 OR department_id=2;
+-- solution2 => Using "IN"
+SELECT * from employees 
+WHERE department_id IN (1,2);
 
 -- SELECT with "ORDER BY" – Sorting Data
 -- This query sorts employees by their last name in ascending order.
 SELECT first_name, last_name, department_id 
 FROM employees
-ORDER BY last_name ASC;
+ORDER BY last_name ASC;  -- NOTE: ASC (default)
 
 -- SELECT with "ORDER BY" – Sorting Data in Descending Order
 -- This query sorts employees by hire_date in descending order (most recent hires first).
@@ -127,9 +151,21 @@ SELECT first_name, last_name, hire_date
 FROM employees
 ORDER BY hire_date DESC;
 
+-- We used "CHECK()" function
 -- COUNT() Function – Counting Records
--- This query counts how many employees are there in each department (grouped by department_id).
 
+-- How many employees in general:
+SELECT COUNT(*) FROM employees;
+
+-- How many employees in general and using "AS" for alias column name (title):
+SELECT COUNT(*) AS "Emp Total"  FROM employees;
+
+-- how many employees in IT department:
+-- employees table => FK: department_id=2
+SELECT department_id, COUNT(*) AS "IT Employees"  FROM employees
+WHERE department_id=2;
+
+-- This query counts how many employees are there in each department (grouped by department_id).
 SELECT department_id, COUNT(*) AS employee_count
 FROM employees
 GROUP BY department_id;
@@ -150,6 +186,9 @@ WHERE emp_id = 1;
 SELECT first_name, last_name, job_title
 FROM employees
 WHERE department_id IS NULL;
+-- OR:
+SELECT * FROM employees 
+WHERE department_id = NULL;
 
 -- -----------------------------------
 -- The demonstrate different types of joins.
@@ -161,6 +200,26 @@ WHERE department_id IS NULL;
 -- Only employees who are assigned to a department will appear in the result.
 
 -- Using INNER JOIN to combine employees with their department names
+-- Error:
+SELECT * FROM employees
+JOIN departments
+ON department_id = department_id; -- ambiguous error => x = x
+
+-- Solve the error:
+SELECT * FROM employees
+JOIN departments
+ON employees.department_id = departments.department_id;
+-- employees.department_id (FK) = departments.department_id (PK)
+-- on PK = FK or FK = PK
+
+-- Using INNER JOIN to combine employees with their department names
+-- Adding alias letters for the tables:
+-- another version:
+SELECT * FROM employees e
+JOIN departments d
+ON e.department_id = d.department_id;
+
+-- or adding them for the column also, in this case, it's optional
 SELECT e.first_name, e.last_name, d.department_name
 FROM employees e
 JOIN departments d ON e.department_id = d.department_id;
