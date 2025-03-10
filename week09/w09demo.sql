@@ -4,28 +4,31 @@ USE story_club;
 
 -- Creating the authors table
 CREATE TABLE IF NOT EXISTS authors (
-    author_id INT AUTO_INCREMENT PRIMARY KEY, -- Unique ID for each author
-    first_name VARCHAR(40) NOT NULL, -- First name cannot be NULL
-    last_name VARCHAR(40) NOT NULL,  -- Last name cannot be NULL
-    email VARCHAR(70) UNIQUE, -- Email must be unique
+    author_id INT AUTO_INCREMENT PRIMARY KEY, 
+    first_name VARCHAR(40) NOT NULL, 
+    last_name VARCHAR(40) NOT NULL,  
+    email VARCHAR(70) UNIQUE, 
     password VARCHAR(100), -- Suitable length for hashed passwords
-    phone VARCHAR(20), -- Text format for phone numbers
+    phone VARCHAR(20), 
     is_admin TINYINT DEFAULT 0, -- 0 for regular users, 1 for admins
-    city VARCHAR(30),  -- City name
+    city VARCHAR(30),  
     province VARCHAR(30) DEFAULT 'ON', -- Default province is Ontario (ON)
     join_date DATETIME DEFAULT CURRENT_TIMESTAMP, -- Defaults to current time if not provided
     birth_date DATE -- New column to store author's birth date
 );
 
+-- Relation between authors and stories = RDBMS
+
 -- Creating the stories table
 CREATE TABLE IF NOT EXISTS stories (
-    story_id INT AUTO_INCREMENT PRIMARY KEY, -- Unique ID for each story
-    author_id INT, -- Foreign key referencing authors
-    title VARCHAR(70) NOT NULL, -- Story title cannot be NULL
-    content TEXT NOT NULL, -- Story content cannot be NULL
+    story_id INT AUTO_INCREMENT PRIMARY KEY, 
+    author_id INT, 
+    title VARCHAR(70) NOT NULL, 
+    content TEXT NOT NULL,
     genre VARCHAR(50), -- Genre of the story
     published_date DATETIME DEFAULT CURRENT_TIMESTAMP, -- Defaults to current timestamp
-    FOREIGN KEY (author_id) REFERENCES authors(author_id) ON DELETE CASCADE -- If an author is deleted, their stories will also be deleted automatically
+    FOREIGN KEY (author_id) REFERENCES authors(author_id) ON DELETE CASCADE 
+    -- If an author is deleted, their stories will also be deleted automatically
 );
 
 -- Link: https://en.wikipedia.org/wiki/List_of_writing_genres
@@ -51,18 +54,28 @@ INSERT INTO stories (author_id, title, content, genre) VALUES
 (4, 'It is ok to speak', 'Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.', 'Romance'),
 (5, 'Time to study', 'Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.', 'Horror');
 
+INSERT INTO authors (first_name, last_name,email,city, province,birth_date)
+ VALUES
+("Alex","Chow",'alex@yahoo.ca', 'Toronto','ON','1970-07-07'),
+("Sam","Chow",'sam@yahoo.ca', 'Scarborough','ON','1975-10-12'),
+("Sarah","Gray",'sara@yahoo.ca', 'Toronto','ON','1990-08-10'),
+("Martin","Smith",'martin@yahoo.ca', 'Mississauga','ON','1980-02-23'),
+("Helen","Henry",'helen@yahoo.ca', 'Markham','ON','1982-05-07');
+
 -- Aggregate Function Queries
 -- Link: https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html
 -- Link: https://www.w3schools.com/sql/sql_count_avg_sum.asp
 
--- Count how many authors are in the database
+-- Count how many authors are in the database:
 SELECT COUNT(author_id) FROM authors;
 
 -- Alternative way to count rows in the table:
 SELECT COUNT(*) FROM authors;
+-- OR:
+SELECT COUNT(*) AS 'Total Authors' FROM authors;
 
 -- Count authors from a specific city (e.g., Toronto)
-SELECT city, COUNT(city) FROM authors WHERE city = 'Toronto';
+SELECT city, COUNT(city) FROM authors WHERE city = 'ToRonTO'; -- Remember that SQL is not case-sensitive
 
 -- Using an alias for better readability:
 SELECT city, COUNT(city) AS Total FROM authors WHERE city = 'Toronto';
@@ -107,9 +120,26 @@ SELECT MAX(CHAR_LENGTH(title)) AS Longest_Title, MIN(CHAR_LENGTH(title)) AS Shor
 SELECT author_id, COUNT(*) AS Total_Stories FROM stories GROUP BY author_id;
 
 /* 
-More Examples with Invoice
+More Examples with Students Average
 */
+CREATE TABLE IF NOT EXISTS students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY, -- Unique ID for each author
+    first_name VARCHAR(40) NOT NULL, -- First name cannot be NULL
+	last_name VARCHAR(40) NOT NULL,  -- Last name cannot be NULL
+	average DECIMAL (7,2)
+);
 
+INSERT INTO students (first_name, last_name, average)
+VALUES
+("Alex","Chow", 78.72),
+("Sam","Chow", 84.79),
+("Sarah","Gray",50),
+("Martin","Smith",90.12),
+("Helen","Henrry",67.90);
+
+/* 
+More Examples with Invoices Average
+*/
 -- Step 1: Create the "invoices" table
 -- This table will have two columns: invoice_id (the unique ID for each invoice) and total (the total amount of each invoice)
 CREATE TABLE invoices (
